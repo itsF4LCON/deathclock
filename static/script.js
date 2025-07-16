@@ -98,4 +98,135 @@ restartBtn.onclick = () => {
 };
 
 prevBtn.onclick = () => {
-  if (current
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    showQuestion();
+  }
+};
+
+nextBtn.onclick = () => {
+  if (!validateAnswer()) return;
+  saveAnswer();
+  if (currentQuestionIndex < questions.length - 1) {
+    currentQuestionIndex++;
+    showQuestion();
+  } else {
+    submitAnswers();
+  }
+};
+
+function showQuestion() {
+  prevBtn.disabled = currentQuestionIndex === 0;
+  nextBtn.disabled = true;
+  const q = questions[currentQuestionIndex];
+  questionTitle.textContent = q.title;
+  questionExample.textContent = q.example;
+
+  // Clear previous input
+  inputArea.innerHTML = "";
+
+  if (q.inputType === "number") {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = 0;
+    input.value = answers[q.key] || "";
+    input.oninput = () => {
+      nextBtn.disabled = input.value.trim() === "" || isNaN(input.value) || input.value <= 0;
+    };
+    inputArea.appendChild(input);
+  } else if (q.inputType === "select") {
+    const select = document.createElement("select");
+    select.innerHTML = '<option value="">-- Select --</option>';
+
+    if (q.key === "country" && q.options.length === 0) {
+      // fetch countries list once
+      fetch('/countries')
+        .then(res => res.json())
+        .then(countries => {
+          q.options = countries;
+          countries.forEach(c => {
+            const option = document.createElement("option");
+            option.value = c;
+            option.textContent = c;
+            select.appendChild(option);
+          });
+          if (answers[q.key]) select.value = answers[q.key];
+        });
+    } else {
+      q.options.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
+        select.appendChild(option);
+      });
+    }
+
+    select.value = answers[q.key] || "";
+    select.onchange = () => {
+      nextBtn.disabled = select.value === "";
+    };
+    inputArea.appendChild(select);
+  }
+}
+
+function validateAnswer() {
+  const input = inputArea.querySelector("input, select");
+  if (!input) return false;
+  if (input.value.trim() === "") {
+    alert("Please answer the question.");
+    return false;
+  }
+  if (input.type === "number" && (isNaN(input.value) || input.value <= 0)) {
+    alert("Please enter a valid positive number.");
+    return false;
+  }
+  return true;
+}
+
+function saveAnswer() {
+  const input = inputArea.querySelector("input, select");
+  if (!input) return;
+  answers[questions[currentQuestionIndex].key] = input.value.trim();
+}
+
+function submitAnswers() {
+  fetch("/", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(answers),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      showResult(data);
+    })
+    .catch(() => {
+      alert("Failed to calculate. Please try again.");
+    });
+}
+
+function showResult(data) {
+  questionScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+  deathDateEl.textContent = data.death_date;
+  lifeYearsEl.textContent = data.life.toFixed(1);
+
+  let secondsLeft = data.seconds;
+  updateCountdown(secondsLeft);
+
+  const interval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft < 0) {
+      clearInterval(interval);
+      countdownEl.textContent = "Time's up!";
+      return;
+    }
+    updateCountdown(secondsLeft);
+  }, 1000);
+
+  function updateCountdown(sec) {
+    const hrs = Math.floor(sec / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
+    const secs = sec % 60;
+    countdownEl.textContent = `Time left: ${hrs}h ${mins}m ${secs}s`;
+  }
+}
