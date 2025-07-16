@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+    <script src="/static/countdown.js" defer></script>
+</head>
+<body>
+    <h1>Death Clock Result</h1>
+    <p>Estimated date of death: <strong>{{ death_date }}</strong></p>
+    <p>Estimated lifespan: <strong>{{ life }} years</strong></p>
+    <p id="countdown">Loading countdown...</p>
+
+    <script>
+        const totalSeconds = {{ seconds }};
+    </script>
+</body>
+</html>
