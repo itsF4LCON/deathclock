@@ -141,8 +141,8 @@ function showQuestion() {
       fetch('/static/countries.json')
         .then(res => res.json())
         .then(data => {
-          q.options = data.map(c => c.name); // extract country names
-          q.lifeExpectancies = {}; // store life expectancy keyed by country for backend use if needed
+          q.options = data.map(c => c.name);
+          q.lifeExpectancies = {};
           data.forEach(c => {
             q.lifeExpectancies[c.name] = c.life_expectancy;
           });
@@ -218,7 +218,10 @@ function showResult(data) {
   questionScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
   deathDateEl.textContent = data.death_date;
-  lifeYearsEl.textContent = data.life.toFixed(1);
+  
+  // Calculate life years from seconds (1 year ~ 365.25 days)
+  const lifeYears = data.seconds / (365.25 * 24 * 3600);
+  lifeYearsEl.textContent = lifeYears.toFixed(1);
 
   let secondsLeft = data.seconds;
   updateCountdown(secondsLeft);
