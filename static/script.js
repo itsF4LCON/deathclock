@@ -11,7 +11,7 @@ const questions = [
     title: "Select your country",
     example: "Choose your country from the list",
     inputType: "select",
-    options: [], // will be filled dynamically
+    options: [], // will be filled dynamically from countries.json
   },
   {
     key: "smoker",
@@ -93,7 +93,6 @@ startBtn.onclick = () => {
 restartBtn.onclick = () => {
   resultScreen.classList.add("hidden");
   welcomeScreen.classList.remove("hidden");
-  // reset answers
   for (const key in answers) delete answers[key];
 };
 
@@ -122,7 +121,6 @@ function showQuestion() {
   questionTitle.textContent = q.title;
   questionExample.textContent = q.example;
 
-  // Clear previous input
   inputArea.innerHTML = "";
 
   if (q.inputType === "number") {
@@ -139,18 +137,28 @@ function showQuestion() {
     select.innerHTML = '<option value="">-- Select --</option>';
 
     if (q.key === "country" && q.options.length === 0) {
-      // fetch countries list once
-      fetch('/countries')
+      nextBtn.disabled = true; // disable next until countries loaded
+      fetch('/static/countries.json')
         .then(res => res.json())
-        .then(countries => {
-          q.options = countries;
-          countries.forEach(c => {
+        .then(data => {
+          q.options = data.map(c => c.name); // extract country names
+          q.lifeExpectancies = {}; // store life expectancy keyed by country for backend use if needed
+          data.forEach(c => {
+            q.lifeExpectancies[c.name] = c.life_expectancy;
+          });
+
+          q.options.forEach(country => {
             const option = document.createElement("option");
-            option.value = c;
-            option.textContent = c;
+            option.value = country;
+            option.textContent = country;
             select.appendChild(option);
           });
           if (answers[q.key]) select.value = answers[q.key];
+          nextBtn.disabled = select.value === "";
+        })
+        .catch(() => {
+          alert("Failed to load countries.");
+          nextBtn.disabled = false;
         });
     } else {
       q.options.forEach(opt => {
@@ -159,12 +167,14 @@ function showQuestion() {
         option.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
         select.appendChild(option);
       });
+      select.value = answers[q.key] || "";
+      nextBtn.disabled = select.value === "";
     }
 
-    select.value = answers[q.key] || "";
     select.onchange = () => {
       nextBtn.disabled = select.value === "";
     };
+
     inputArea.appendChild(select);
   }
 }
@@ -195,8 +205,8 @@ function submitAnswers() {
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify(answers),
   })
-    .then((res) => res.json())
-    .then((data) => {
+    .then(res => res.json())
+    .then(data => {
       showResult(data);
     })
     .catch(() => {
