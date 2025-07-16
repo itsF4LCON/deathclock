@@ -1,21 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Death Clock</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>YourTime - Death Clock</title>
+<link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-    <h1>Death Clock</h1>
-    <form method="POST">
-        Age: <input name="age" type="number" required><br>
-        Country: <input name="country" required><br>
-        Do you smoke? <select name="smoker"><option>yes</option><option>no</option></select><br>
-        Do you exercise? <select name="exercise"><option>yes</option><option>no</option></select><br>
-        Diet: <select name="diet"><option>healthy</option><option>average</option><option>unhealthy</option></select><br>
-        Alcohol: <select name="alcohol"><option>none</option><option>light</option><option>heavy</option></select><br>
-        Sleep: <select name="sleep"><option>less</option><option>normal</option><option>more</option></select><br>
-        Stress: <select name="stress"><option>low</option><option>medium</option><option>high</option></select><br>
-        Medical Conditions: <select name="medical"><option>none</option><option>some</option><option>severe</option></select><br><br>
-        <button type="submit">Calculate</button>
-    </form>
+<div id="app">
+  <div id="welcome-screen" class="screen">
+    <h1>Welcome to YourTime</h1>
+    <p>Find out your estimated lifespan with a fun countdown.</p>
+    <button id="start-btn">Calculate</button>
+  </div>
+
+  <div id="question-screen" class="screen hidden">
+    <h2 id="question-title"></h2>
+    <p id="question-example" class="example-text"></p>
+    <div id="input-area"></div>
+    <div class="buttons">
+      <button id="prev-btn" disabled>Back</button>
+      <button id="next-btn" disabled>Next</button>
+    </div>
+  </div>
+
+  <div id="result-screen" class="screen hidden">
+    <h1>YourTime Result</h1>
+    <p>Estimated date of death: <strong id="death-date"></strong></p>
+    <p>Estimated lifespan: <strong id="life-years"></strong> years</p>
+    <p id="countdown">Loading countdown...</p>
+    <button id="restart-btn">Restart</button>
+  </div>
+</div>
+
+<script src="/static/script.js"></script>
 </body>
 </html>
